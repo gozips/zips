@@ -32,6 +32,6 @@ func TestHTTPClientError(t *testing.T) {
 	assert.Equal(t, "GET http://unreachable: http client error", string(b[:n]))
 }
 
-func TestHTTPAppendsExtFromContentType(t *testing.T) {
-	t.Skip("")
-}
+// func TestHTTPAppendsExtFromContentType(t *testing.T) {
+// 	t.Skip("")
+// }
