@@ -1,5 +1,6 @@
 package from
 
+import "regexp"
 import "testing"
 import "github.com/nowk/assert"
 
@@ -19,9 +20,12 @@ func TestHTTPClientError(t *testing.T) {
 	name, r, err := HTTP("http://unreachable")
 
 	assert.Equal(t, "unreachable.txt", name)
-	assert.Equal(t,
-		"Get http://unreachable: dial tcp: lookup unreachable: no such host",
-		err.Error())
+
+	reg := regexp.MustCompile(`Get http:\/\/unreachable:( dial tcp:)? lookup unreachable: no such host`)
+
+	if errStr := err.Error(); !reg.MatchString(errStr) {
+		t.Errorf("Expected %s, got %s", reg.String(), errStr)
+	}
 
 	b := make([]byte, 32*1024)
 	n, _ := r.Read(b)
