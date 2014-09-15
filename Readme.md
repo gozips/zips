@@ -1,7 +1,7 @@
 # go-zips
 
 [![Build Status](https://travis-ci.org/nowk/go-zips.svg?branch=master)](https://travis-ci.org/nowk/go-zips)
-[![GoDoc](https://godoc.org/github.com/nowk/go-zips.v0?status.svg)](http://godoc.org/github.com/nowk/go-zips.v0)
+[![GoDoc](https://godoc.org/github.com/nowk/go-zips?status.svg)](http://godoc.org/github.com/nowk/go-zips)
 
 An API to always return a zip archive
 
