@@ -3,7 +3,6 @@ package zips_test
 import "bytes"
 import "errors"
 import "fmt"
-import "io"
 import "io/ioutil"
 import "net/http"
 import "net/http/httptest"
@@ -66,20 +65,15 @@ func TestZipFromFSSources(t *testing.T) {
 	})
 }
 
-func TestErrorOnlyContinues(t *testing.T) {
+func TestErrorSkipsEntry(t *testing.T) {
 	out := new(bytes.Buffer)
 	zip := NewZip("good", "error", "andgoodagain")
-	_, ok := zip.Write(func(srcPath string) (string, io.ReadCloser, error) {
-		var r io.ReadCloser
-		var err error
-		switch srcPath {
-		case "good", "andgoodagain":
-			r = ioutil.NopCloser(strings.NewReader("Good!"))
-		case "error":
-			err = errors.New("uh-oh")
+	_, ok := zip.Write(func(srcPath string) (string, interface{}) {
+		if "good" == srcPath || "andgoodagain" == srcPath {
+			return srcPath, ioutil.NopCloser(strings.NewReader("Good!"))
 		}
 
-		return srcPath, r, err
+		return srcPath, errors.New("uh-oh")
 	}, out)
 
 	assert.False(t, ok)
@@ -87,33 +81,6 @@ func TestErrorOnlyContinues(t *testing.T) {
 	assert.Equal(t, "uh-oh", zip.Errors()[0].Error())
 	verifyZip(t, out.Bytes(), []tEntries{
 		{"good", "Good!"},
-		{"andgoodagain", "Good!"},
-	})
-}
-
-func TestErrorWithReadCloserCreatesEntryWithError(t *testing.T) {
-	out := new(bytes.Buffer)
-	zip := NewZip("good", "errorandentry", "andgoodagain")
-	_, ok := zip.Write(func(srcPath string) (string, io.ReadCloser, error) {
-		var r io.ReadCloser
-		var err error
-		switch srcPath {
-		case "good", "andgoodagain":
-			r = ioutil.NopCloser(strings.NewReader("Good!"))
-		case "errorandentry":
-			err = errors.New("uh-oh")
-			r = ioutil.NopCloser(strings.NewReader("Generic Error"))
-		}
-
-		return srcPath, r, err
-	}, out)
-
-	assert.False(t, ok)
-	assert.Equal(t, 1, len(zip.Errors()))
-	assert.Equal(t, "uh-oh", zip.Errors()[0].Error())
-	verifyZip(t, out.Bytes(), []tEntries{
-		{"good", "Good!"},
-		{"errorandentry", "Generic Error"},
 		{"andgoodagain", "Good!"},
 	})
 }

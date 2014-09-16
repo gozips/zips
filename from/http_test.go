@@ -1,15 +1,17 @@
 package from
 
+import "io"
 import "regexp"
 import "testing"
 import "github.com/nowk/assert"
 
 func TestHTTPURLParseError(t *testing.T) {
 	badURL := "thisisabadurl"
-	name, r, err := HTTP(badURL)
+	name, v := HTTP(badURL)
+	r := v.(io.ReadCloser)
+	defer r.Close()
 
 	assert.Equal(t, "thisisabadurl.txt", name)
-	assert.Nil(t, err)
 
 	b := make([]byte, 32*1024)
 	n, _ := r.Read(b)
@@ -17,19 +19,18 @@ func TestHTTPURLParseError(t *testing.T) {
 }
 
 func TestHTTPClientError(t *testing.T) {
-	name, r, err := HTTP("http://unreachable")
+	name, v := HTTP("http://unreachable")
+	r := v.(io.ReadCloser)
+	defer r.Close()
 
 	assert.Equal(t, "unreachable.txt", name)
 
 	reg := regexp.MustCompile(`Get http:\/\/unreachable:( dial tcp:)? lookup unreachable: no such host`)
-
-	if errStr := err.Error(); !reg.MatchString(errStr) {
-		t.Errorf("Expected %s, got %s", reg.String(), errStr)
-	}
-
 	b := make([]byte, 32*1024)
 	n, _ := r.Read(b)
-	assert.Equal(t, "GET http://unreachable: http client error", string(b[:n]))
+	if str := string(b[:n]); !reg.MatchString(str) {
+		t.Errorf("Expected %s, got %s", reg.String(), str)
+	}
 }
 
 // func TestHTTPAppendsExtFromContentType(t *testing.T) {

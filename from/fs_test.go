@@ -1,14 +1,15 @@
 package from
 
+import "io"
 import "testing"
 import "github.com/nowk/assert"
 
 func TestFSPathError(t *testing.T) {
-	name, r, err := FS("path/to/doesnotexist.txt")
+	name, v := FS("path/to/doesnotexist.txt")
+	r := v.(io.ReadCloser)
 	defer r.Close()
 
 	assert.Equal(t, "doesnotexist.txt.txt", name)
-	assert.Nil(t, err)
 
 	b := make([]byte, 32*1024)
 	n, _ := r.Read(b)
