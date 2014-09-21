@@ -57,9 +57,8 @@ func (z *Zip) Write(fn FromFunc, w io.Writer) (int64, bool) {
 
 	for _, srcStr := range z.Sources {
 		name, v := fn.Readfrom(srcStr)
-		switch v.(type) {
+		switch r := v.(type) {
 		case io.ReadCloser:
-			r := v.(io.ReadCloser)
 			defer r.Close()
 
 			w, err := zipOut.Create(name)
@@ -72,7 +71,7 @@ func (z *Zip) Write(fn FromFunc, w io.Writer) (int64, bool) {
 
 			n += m
 		case error:
-			z.check(v.(error), &ok)
+			z.check(r, &ok)
 		}
 	}
 
