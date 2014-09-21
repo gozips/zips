@@ -34,20 +34,29 @@ func (z *Zip) check(e error, ok *bool) bool {
 	return true
 }
 
+// FromFunc is the signature for the reader function that reads from the sources
+// for each entry
+type FromFunc func(string) (string, interface{})
+
+// Readfrom calls f(s)
+func (f FromFunc) Readfrom(s string) (string, interface{}) {
+	return f(s)
+}
+
 // Write writes each file of the zip out to the Writer, passing each source
 // through `srcfn` to get the name, content, error for each entry.
 //
 // `srcfn` can return either a ReadCloser or Error. This does allow one to
 // return a ReadCloser on an error to create an entry containing that error
 // message. Errors will skip creating an entry
-func (z *Zip) Write(srcfn func(string) (string, interface{}), w io.Writer) (int64, bool) {
+func (z *Zip) Write(fn FromFunc, w io.Writer) (int64, bool) {
 	var n int64
 	ok := true
 	zipOut := zip.NewWriter(w)
 	defer zipOut.Close()
 
 	for _, srcStr := range z.Sources {
-		name, v := srcfn(srcStr)
+		name, v := fn.Readfrom(srcStr)
 		switch v.(type) {
 		case io.ReadCloser:
 			r := v.(io.ReadCloser)
