@@ -19,7 +19,7 @@ An API to always return a zip archive
     func main() {
       out := os.Create("out.zip")
       zip := zips.NewZip("file1.txt", "file2.txt", "file3.txt")
-      n, ok := zip.Write(from.FS, out)
+      n, ok := zip.Write(out, from.FS)
 
       log.Print("bytes written ", n)
       log.Print("archived without error ", ok)
