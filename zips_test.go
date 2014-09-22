@@ -38,7 +38,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 
 	out := new(bytes.Buffer)
 	zip := NewZip(url1, url2, url3)
-	n, ok := zip.Write(from.HTTP, out)
+	n, ok := zip.Write(out, from.HTTP)
 
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(zip.Errors()))
@@ -53,7 +53,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 func TestZipFromFSSources(t *testing.T) {
 	out := new(bytes.Buffer)
 	zip := NewZip("sample/file1.txt", "sample/file2.txt", "sample/file3.txt")
-	n, ok := zip.Write(from.FS, out)
+	n, ok := zip.Write(out, from.FS)
 
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(zip.Errors()))
@@ -68,13 +68,13 @@ func TestZipFromFSSources(t *testing.T) {
 func TestErrorSkipsEntry(t *testing.T) {
 	out := new(bytes.Buffer)
 	zip := NewZip("good", "error", "andgoodagain")
-	_, ok := zip.Write(func(srcPath string) (string, interface{}) {
+	_, ok := zip.Write(out, func(srcPath string) (string, interface{}) {
 		if "good" == srcPath || "andgoodagain" == srcPath {
 			return srcPath, ioutil.NopCloser(strings.NewReader("Good!"))
 		}
 
 		return srcPath, errors.New("uh-oh")
-	}, out)
+	})
 
 	assert.False(t, ok)
 	assert.Equal(t, 1, len(zip.Errors()))

@@ -49,7 +49,7 @@ func (f FromFunc) Readfrom(s string) (string, interface{}) {
 // `srcfn` can return either a ReadCloser or Error. This does allow one to
 // return a ReadCloser on an error to create an entry containing that error
 // message. Errors will skip creating an entry
-func (z *Zip) Write(fn FromFunc, w io.Writer) (int64, bool) {
+func (z *Zip) Write(w io.Writer, fn FromFunc) (int64, bool) {
 	var n int64
 	ok := true
 	zipOut := zip.NewWriter(w)
