@@ -21,6 +21,11 @@ func (z Zip) Errors() []error {
 	return z.errors
 }
 
+// Add appends sources
+func (z *Zip) Add(srcStr string) {
+	z.Sources = append(z.Sources, srcStr)
+}
+
 // check adds *unhandlable* errors to a slice to be later inspected.
 // Also marks `ok` as false
 func (z *Zip) check(e error, ok *bool) bool {

@@ -84,3 +84,17 @@ func TestErrorSkipsEntry(t *testing.T) {
 		{"andgoodagain", "Good!"},
 	})
 }
+
+func TestAdd(t *testing.T) {
+	zip := NewZip()
+	zip.Add("source1.txt")
+	zip.Add("source2.txt")
+	zip.Add("source3.txt")
+	assert.Equal(t, 3, len(zip.Sources))
+
+	zip = NewZip("source1.txt", "source2.txt")
+	zip.Add("source3.txt")
+	zip.Add("source4.txt")
+	zip.Add("source5.txt")
+	assert.Equal(t, 5, len(zip.Sources))
+}
