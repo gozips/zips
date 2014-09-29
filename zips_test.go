@@ -10,7 +10,7 @@ import "strings"
 import "testing"
 import "github.com/nowk/assert"
 import . "github.com/nowk/go-zips"
-import "github.com/nowk/go-zips/from"
+import "github.com/gozips/sources"
 
 func h(str string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +37,11 @@ func TestZipFromHTTPSources(t *testing.T) {
 	url3 := fmt.Sprintf("%s/api/data.json", ts.URL)
 
 	out := new(bytes.Buffer)
-	zip := NewZip(url1, url2, url3)
-	n, ok := zip.Write(out, from.HTTP)
+	zip := NewZip(sources.HTTP)
+	zip.Add(url1)
+	zip.Add(url2)
+	zip.Add(url3)
+	n, ok := zip.WriteTo(out)
 
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(zip.Errors()))
@@ -52,8 +55,11 @@ func TestZipFromHTTPSources(t *testing.T) {
 
 func TestZipFromFSSources(t *testing.T) {
 	out := new(bytes.Buffer)
-	zip := NewZip("sample/file1.txt", "sample/file2.txt", "sample/file3.txt")
-	n, ok := zip.Write(out, from.FS)
+	zip := NewZip(sources.FS)
+	zip.Add("sample/file1.txt")
+	zip.Add("sample/file2.txt")
+	zip.Add("sample/file3.txt")
+	n, ok := zip.WriteTo(out)
 
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(zip.Errors()))
@@ -66,15 +72,21 @@ func TestZipFromFSSources(t *testing.T) {
 }
 
 func TestErrorSkipsEntry(t *testing.T) {
-	out := new(bytes.Buffer)
-	zip := NewZip("good", "error", "andgoodagain")
-	_, ok := zip.Write(out, func(srcPath string) (string, interface{}) {
+	var sourceFn = func(srcPath string) (string, interface{}) {
 		if "good" == srcPath || "andgoodagain" == srcPath {
 			return srcPath, ioutil.NopCloser(strings.NewReader("Good!"))
 		}
 
 		return srcPath, errors.New("uh-oh")
-	})
+	}
+
+	out := new(bytes.Buffer)
+	zip := NewZip(sourceFn)
+	zip.Add("good")
+	zip.Add("error")
+	zip.Add("andgoodagain")
+
+	_, ok := zip.WriteTo(out)
 
 	assert.False(t, ok)
 	assert.Equal(t, 1, len(zip.Errors()))
@@ -83,18 +95,4 @@ func TestErrorSkipsEntry(t *testing.T) {
 		{"good", "Good!"},
 		{"andgoodagain", "Good!"},
 	})
-}
-
-func TestAdd(t *testing.T) {
-	zip := NewZip()
-	zip.Add("source1.txt")
-	zip.Add("source2.txt")
-	zip.Add("source3.txt")
-	assert.Equal(t, 3, len(zip.Sources))
-
-	zip = NewZip("source1.txt", "source2.txt")
-	zip.Add("source3.txt")
-	zip.Add("source4.txt")
-	zip.Add("source5.txt")
-	assert.Equal(t, 5, len(zip.Sources))
 }
