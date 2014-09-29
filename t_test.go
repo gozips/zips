@@ -1,4 +1,4 @@
-package zips_test
+package zips
 
 import "archive/zip"
 import "bytes"
