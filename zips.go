@@ -1,13 +1,14 @@
 package zips
 
 import "archive/zip"
+import "fmt"
 import "io"
+import "strings"
 import "github.com/gozips/source"
 
 // Zip provides a trict around a zip.Writer
 type Zip struct {
 	Sources []string
-	errors  []error
 	source  source.Func
 }
 
@@ -18,33 +19,38 @@ func NewZip(fn source.Func) (z *Zip) {
 	}
 }
 
-// Errors returns the errors collected during the zipping process
-func (z Zip) Errors() []error {
-	return z.errors
-}
-
 // Add appends sources
 func (z *Zip) Add(srcStr ...string) {
 	z.Sources = append(z.Sources, srcStr...)
 }
 
-// check adds *unhandlable* errors to a slice to be later inspected.
-// Also marks `ok` as false
-func (z *Zip) check(e error, ok *bool) bool {
+// check appends a ZipError
+func check(e error, err *ZipError) bool {
 	if e == nil {
 		return false
 	}
 
-	z.errors = append(z.errors, e)
-	*ok = false
-
+	*err = append(*err, e)
 	return true
 }
 
+// ZipError is a collection of error that implements error
+type ZipError []error
+
+// Error returns a collective error
+func (z ZipError) Error() string {
+	var li []string
+	for _, err := range z {
+		li = append(li, fmt.Sprintf("* %s", err))
+	}
+
+	return fmt.Sprintf("%d error(s):\n\n%s", len(z), strings.Join(li, "\n"))
+}
+
 // WriteTo writes the zip out the Writer
-func (z *Zip) WriteTo(w io.Writer) (int64, bool) {
+func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 	var n int64
-	ok := true
+	var zerr ZipError
 	zw := zip.NewWriter(w)
 	defer zw.Close()
 
@@ -55,19 +61,19 @@ func (z *Zip) WriteTo(w io.Writer) (int64, bool) {
 		case io.ReadCloser:
 			defer r.Close()
 			w, err := zw.Create(name)
-			if z.check(err, &ok) {
+			if check(err, &zerr) {
 				continue // if we can't create an entry
 			}
 
 			m, err := io.Copy(w, r)
-			z.check(err, &ok)
+			check(err, &zerr)
 
 			n += m
 
 		case error:
-			z.check(r, &ok)
+			check(r, &zerr)
 		}
 	}
 
-	return n, ok
+	return n, zerr
 }

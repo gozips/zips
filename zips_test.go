@@ -37,10 +37,9 @@ func TestZipFromHTTPSources(t *testing.T) {
 	zip := NewZip(sources.HTTP)
 	zip.Add(url1)
 	zip.Add(url2, url3)
-	n, ok := zip.WriteTo(out)
+	n, err := zip.WriteTo(out)
 
-	assert.True(t, ok)
-	assert.Equal(t, 0, len(zip.Errors()))
+	assert.Nil(t, err)
 	assert.Equal(t, int64(38), n)
 	verifyZip(t, out.Bytes(), []tEntries{
 		{"index.html", "Hello World!"},
@@ -55,10 +54,9 @@ func TestZipFromFSSources(t *testing.T) {
 	zip.Add("sample/file1.txt")
 	zip.Add("sample/file2.txt")
 	zip.Add("sample/file3.txt")
-	n, ok := zip.WriteTo(out)
+	n, err := zip.WriteTo(out)
 
-	assert.True(t, ok)
-	assert.Equal(t, 0, len(zip.Errors()))
+	assert.Nil(t, err)
 	assert.Equal(t, int64(11), n)
 	verifyZip(t, out.Bytes(), []tEntries{
 		{"file1.txt", "One"},
@@ -81,11 +79,14 @@ func TestErrorSkipsEntry(t *testing.T) {
 	zip := NewZip(sourceFn)
 	zip.Add("good", "error", "andgoodagain")
 
-	_, ok := zip.WriteTo(out)
+	_, err := zip.WriteTo(out)
 
-	assert.False(t, ok)
-	assert.Equal(t, 1, len(zip.Errors()))
-	assert.Equal(t, "uh-oh", zip.Errors()[0].Error())
+	assert.NotNil(t, err)
+	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
+
+	ze := err.(ZipError)
+	assert.Equal(t, 1, len(err.(ZipError)))
+	assert.Equal(t, "uh-oh", ze[0].Error())
 	verifyZip(t, out.Bytes(), []tEntries{
 		{"good", "Good!"},
 		{"andgoodagain", "Good!"},
