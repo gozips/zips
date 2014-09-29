@@ -1,25 +1,24 @@
 # go-zips
 
-[![Build Status](https://travis-ci.org/nowk/go-zips.svg?branch=master)](https://travis-ci.org/nowk/go-zips)
-[![GoDoc](https://godoc.org/github.com/nowk/go-zips?status.svg)](http://godoc.org/github.com/nowk/go-zips)
+[![Build Status](https://travis-ci.org/gozips/zips.svg?branch=master)](https://travis-ci.org/gozips/zips)
+[![GoDoc](https://godoc.org/github.com/gozips/zips?status.svg)](http://godoc.org/github.com/gozips/zips)
 
 An API to always return a zip archive
-
-## go get
-
-    go get github.com/nowk/go-zips
 
 ## Example
 
     import "log"
     import "os"
-    import "github.com/nowk/go-zips"
-    import "github.com/nowk/go-zips/from"
+    import "github.com/gozips/zips"
+    import "github.com/gozips/sources"
 
     func main() {
       out := os.Create("out.zip")
-      zip := zips.NewZip("file1.txt", "file2.txt", "file3.txt")
-      n, ok := zip.Write(out, from.FS)
+      zip := zips.NewZip(sources.FS)
+      zip.Add("file1.txt")
+      zip.Add("file2.txt")
+      zip.Add("file3.txt")
+      n, ok := zip.WriteTo(out)
 
       log.Print("bytes written ", n)
       log.Print("archived without error ", ok)
