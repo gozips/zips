@@ -7,7 +7,7 @@ import "net/http"
 import "net/http/httptest"
 import "testing"
 import "github.com/nowk/assert"
-import "github.com/gozips/sources"
+import "github.com/gozips/source"
 
 func h(str string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 	url3 := fmt.Sprintf("%s/api/data.json", ts.URL)
 
 	out := new(bytes.Buffer)
-	zip := NewZip(sources.HTTP)
+	zip := NewZip(source.HTTP)
 	zip.Add(url1)
 	zip.Add(url2, url3)
 	n, err := zip.WriteTo(out)
@@ -50,7 +50,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 
 func TestZipFromFSSources(t *testing.T) {
 	out := new(bytes.Buffer)
-	zip := NewZip(sources.FS)
+	zip := NewZip(source.FS)
 	zip.Add("sample/file1.txt")
 	zip.Add("sample/file2.txt")
 	zip.Add("sample/file3.txt")

@@ -11,11 +11,11 @@ An API to always return a zip archive
     import "log"
     import "os"
     import "github.com/gozips/zips"
-    import "github.com/gozips/sources"
+    import "github.com/gozips/source"
 
     func main() {
       out := os.Create("out.zip")
-      zip := zips.NewZip(sources.FS)
+      zip := zips.NewZip(source.FS)
       zip.Add("file1.txt")
       zip.Add("file2.txt")
       zip.Add("file3.txt")

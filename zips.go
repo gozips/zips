@@ -4,16 +4,24 @@ import "archive/zip"
 import "fmt"
 import "io"
 import "strings"
-import "github.com/gozips/source"
+
+// SourceFunc is the signature for the reader function that reads from the sources
+// and returns the name of the file and either a io.ReadCloser or error
+type SourceFunc func(string) (string, interface{})
+
+// Readfrom calls f(s)
+func (f SourceFunc) Readfrom(s string) (string, interface{}) {
+	return f(s)
+}
 
 // Zip provides a trict around a zip.Writer
 type Zip struct {
 	Sources []string
-	source  source.Func
+	source  SourceFunc
 }
 
 // NewZip returns a zip that will read sources from the provided reader
-func NewZip(fn source.Func) (z *Zip) {
+func NewZip(fn SourceFunc) (z *Zip) {
 	return &Zip{
 		source: fn,
 	}

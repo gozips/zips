@@ -2,7 +2,6 @@ language: go
 install:
   - go get github.com/nowk/assert
   - go get github.com/gozips/source
-  - go get github.com/gozips/sources
 go:
   - "1.0"
   - "1.1"
