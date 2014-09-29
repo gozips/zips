@@ -19,10 +19,12 @@ An API to always return a zip archive
       zip.Add("file1.txt")
       zip.Add("file2.txt")
       zip.Add("file3.txt")
-      n, ok := zip.WriteTo(out)
+      n, err := zip.WriteTo(out)
+      if err != nil {
+        // handle error
+      }
 
       log.Print("bytes written ", n)
-      log.Print("archived without error ", ok)
     }
 
 ## License
