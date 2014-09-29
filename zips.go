@@ -24,8 +24,8 @@ func (z Zip) Errors() []error {
 }
 
 // Add appends sources
-func (z *Zip) Add(srcStr string) {
-	z.Sources = append(z.Sources, srcStr)
+func (z *Zip) Add(srcStr ...string) {
+	z.Sources = append(z.Sources, srcStr...)
 }
 
 // check adds *unhandlable* errors to a slice to be later inspected.

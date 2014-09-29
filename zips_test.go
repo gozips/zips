@@ -38,8 +38,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 	out := new(bytes.Buffer)
 	zip := NewZip(sources.HTTP)
 	zip.Add(url1)
-	zip.Add(url2)
-	zip.Add(url3)
+	zip.Add(url2, url3)
 	n, ok := zip.WriteTo(out)
 
 	assert.True(t, ok)
@@ -81,9 +80,7 @@ func TestErrorSkipsEntry(t *testing.T) {
 
 	out := new(bytes.Buffer)
 	zip := NewZip(sourceFn)
-	zip.Add("good")
-	zip.Add("error")
-	zip.Add("andgoodagain")
+	zip.Add("good", "error", "andgoodagain")
 
 	_, ok := zip.WriteTo(out)
 
