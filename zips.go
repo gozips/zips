@@ -8,13 +8,13 @@ import "github.com/gozips/source"
 type Zip struct {
 	Sources []string
 	errors  []error
-	r       source.Func
+	source  source.Func
 }
 
 // NewZip returns a zip that will read sources from the provided reader
-func NewZip(r source.Func) (z *Zip) {
+func NewZip(fn source.Func) (z *Zip) {
 	return &Zip{
-		r: r,
+		source: fn,
 	}
 }
 
@@ -45,16 +45,16 @@ func (z *Zip) check(e error, ok *bool) bool {
 func (z *Zip) WriteTo(w io.Writer) (int64, bool) {
 	var n int64
 	ok := true
-	zipOut := zip.NewWriter(w)
-	defer zipOut.Close()
+	zw := zip.NewWriter(w)
+	defer zw.Close()
 
 	for _, srcStr := range z.Sources {
-		name, v := z.r.Readfrom(srcStr)
+		name, v := z.source.Readfrom(srcStr)
+
 		switch r := v.(type) {
 		case io.ReadCloser:
 			defer r.Close()
-
-			w, err := zipOut.Create(name)
+			w, err := zw.Create(name)
 			if z.check(err, &ok) {
 				continue // if we can't create an entry
 			}
@@ -63,6 +63,7 @@ func (z *Zip) WriteTo(w io.Writer) (int64, bool) {
 			z.check(err, &ok)
 
 			n += m
+
 		case error:
 			z.check(r, &ok)
 		}
