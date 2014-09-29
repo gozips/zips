@@ -1,12 +1,10 @@
 package zips
 
 import "bytes"
-import "errors"
 import "fmt"
 import "io/ioutil"
 import "net/http"
 import "net/http/httptest"
-import "strings"
 import "testing"
 import "github.com/nowk/assert"
 import "github.com/gozips/sources"
@@ -72,10 +70,11 @@ func TestZipFromFSSources(t *testing.T) {
 func TestErrorSkipsEntry(t *testing.T) {
 	var sourceFn = func(srcPath string) (string, interface{}) {
 		if "good" == srcPath || "andgoodagain" == srcPath {
-			return srcPath, ioutil.NopCloser(strings.NewReader("Good!"))
+			r := bytes.NewReader([]byte("Good!"))
+			return srcPath, ioutil.NopCloser(r)
 		}
 
-		return srcPath, errors.New("uh-oh")
+		return srcPath, fmt.Errorf("uh-oh")
 	}
 
 	out := new(bytes.Buffer)
