@@ -9,7 +9,7 @@ import "net/http/httptest"
 import "strings"
 import "testing"
 import "github.com/nowk/assert"
-import . "github.com/nowk/go-zips"
+import . "github.com/gozips/zips"
 import "github.com/gozips/sources"
 
 func h(str string) func(http.ResponseWriter, *http.Request) {
