@@ -1,4 +1,5 @@
-# go-zips
+# zips
+
 
 [![Build Status](https://travis-ci.org/gozips/zips.svg?branch=master)](https://travis-ci.org/gozips/zips)
 [![GoDoc](https://godoc.org/github.com/gozips/zips?status.svg)](http://godoc.org/github.com/gozips/zips)
