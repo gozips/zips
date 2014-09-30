@@ -56,6 +56,8 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 
 	for _, srcStr := range z.Sources {
 		name, r, err := z.source.Readfrom(srcStr)
+		check(err, &zerr)
+
 		if r != nil {
 			defer r.Close()
 			w, err := zw.Create(name)
@@ -68,8 +70,6 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 
 			n += m
 		}
-
-		check(err, &zerr)
 	}
 
 	return n, zerr
