@@ -4,24 +4,16 @@ import "archive/zip"
 import "fmt"
 import "io"
 import "strings"
-
-// SourceFunc is the signature for the reader function that reads from the sources
-// and returns the name of the file and either a io.ReadCloser or error
-type SourceFunc func(string) (string, interface{})
-
-// Readfrom calls f(s)
-func (f SourceFunc) Readfrom(s string) (string, interface{}) {
-	return f(s)
-}
+import "github.com/gozips/source"
 
 // Zip provides a trict around a zip.Writer
 type Zip struct {
 	Sources []string
-	source  SourceFunc
+	source  source.Func
 }
 
 // NewZip returns a zip that will read sources from the provided reader
-func NewZip(fn SourceFunc) (z *Zip) {
+func NewZip(fn source.Func) (z *Zip) {
 	return &Zip{
 		source: fn,
 	}
@@ -63,10 +55,8 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 	defer zw.Close()
 
 	for _, srcStr := range z.Sources {
-		name, v := z.source.Readfrom(srcStr)
-
-		switch r := v.(type) {
-		case io.ReadCloser:
+		name, r, err := z.source.Readfrom(srcStr)
+		if r != nil {
 			defer r.Close()
 			w, err := zw.Create(name)
 			if check(err, &zerr) {
@@ -77,10 +67,9 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 			check(err, &zerr)
 
 			n += m
-
-		case error:
-			check(r, &zerr)
 		}
+
+		check(err, &zerr)
 	}
 
 	return n, zerr

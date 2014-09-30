@@ -2,12 +2,14 @@ package zips
 
 import "bytes"
 import "fmt"
+import "io"
 import "io/ioutil"
 import "net/http"
 import "net/http/httptest"
 import "testing"
 import "github.com/nowk/assert"
 import "github.com/gozips/source"
+import "github.com/gozips/sources"
 import gozipst "github.com/gozips/testing"
 
 func h(str string) func(http.ResponseWriter, *http.Request) {
@@ -35,7 +37,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 	url3 := fmt.Sprintf("%s/api/data.json", ts.URL)
 
 	out := new(bytes.Buffer)
-	zip := NewZip(source.HTTP)
+	zip := NewZip(sources.HTTP)
 	zip.Add(url1)
 	zip.Add(url2, url3)
 	n, err := zip.WriteTo(out)
@@ -51,7 +53,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 
 func TestZipFromFSSources(t *testing.T) {
 	out := new(bytes.Buffer)
-	zip := NewZip(source.FS)
+	zip := NewZip(sources.FS)
 	zip.Add("sample/file1.txt")
 	zip.Add("sample/file2.txt")
 	zip.Add("sample/file3.txt")
@@ -66,15 +68,18 @@ func TestZipFromFSSources(t *testing.T) {
 	})
 }
 
-func TestErrorSkipsEntry(t *testing.T) {
-	var sourceFn = func(srcPath string) (string, interface{}) {
+func tSourceFunc(c io.ReadCloser) source.Func {
+	return func(srcPath string) (string, io.ReadCloser, error) {
 		if "good" == srcPath || "andgoodagain" == srcPath {
 			r := bytes.NewReader([]byte("Good!"))
-			return srcPath, ioutil.NopCloser(r)
+			return srcPath, ioutil.NopCloser(r), nil
 		}
-
-		return srcPath, fmt.Errorf("uh-oh")
+		return srcPath, c, fmt.Errorf("uh-oh")
 	}
+}
+
+func TestEntrySkippedIfReadCloserIsNilOnError(t *testing.T) {
+	sourceFn := tSourceFunc(nil)
 
 	out := new(bytes.Buffer)
 	zip := NewZip(sourceFn)
@@ -90,6 +95,29 @@ func TestErrorSkipsEntry(t *testing.T) {
 	assert.Equal(t, "uh-oh", ze[0].Error())
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"good", "Good!"},
+		{"andgoodagain", "Good!"},
+	})
+}
+
+func TestEntryCreatedIfReadCloserIsNotNilOnError(t *testing.T) {
+	c := ioutil.NopCloser(bytes.NewReader([]byte("uh-oh")))
+	sourceFn := tSourceFunc(c)
+
+	out := new(bytes.Buffer)
+	zip := NewZip(sourceFn)
+	zip.Add("good", "error", "andgoodagain")
+
+	_, err := zip.WriteTo(out)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
+
+	ze := err.(ZipError)
+	assert.Equal(t, 1, len(err.(ZipError)))
+	assert.Equal(t, "uh-oh", ze[0].Error())
+	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
+		{"good", "Good!"},
+		{"error", "uh-oh"},
 		{"andgoodagain", "Good!"},
 	})
 }
