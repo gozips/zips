@@ -8,6 +8,7 @@ import "net/http/httptest"
 import "testing"
 import "github.com/nowk/assert"
 import "github.com/gozips/source"
+import gozipst "github.com/gozips/testing"
 
 func h(str string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +42,7 @@ func TestZipFromHTTPSources(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(38), n)
-	verifyZip(t, out.Bytes(), []tEntries{
+	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"index.html", "Hello World!"},
 		{"posts", "Post Body"},
 		{"data.json", `{"data": ["one"]}`},
@@ -58,7 +59,7 @@ func TestZipFromFSSources(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(11), n)
-	verifyZip(t, out.Bytes(), []tEntries{
+	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"file1.txt", "One"},
 		{"file2.txt", "Two"},
 		{"file3.txt", "Three"},
@@ -87,7 +88,7 @@ func TestErrorSkipsEntry(t *testing.T) {
 	ze := err.(ZipError)
 	assert.Equal(t, 1, len(err.(ZipError)))
 	assert.Equal(t, "uh-oh", ze[0].Error())
-	verifyZip(t, out.Bytes(), []tEntries{
+	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"good", "Good!"},
 		{"andgoodagain", "Good!"},
 	})
