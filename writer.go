@@ -57,7 +57,3 @@ func (z *Writer) Close() error {
 func (z *Writer) tally() {
 	z.BytesIn, z.BytesOut = z.fileHeaders.total()
 }
-
-func (z *Writer) totals() (int64, int64) {
-	return z.BytesIn, z.BytesOut
-}
