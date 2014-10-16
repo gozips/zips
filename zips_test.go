@@ -40,11 +40,11 @@ func TestZipFromHTTPSources(t *testing.T) {
 	zip := NewZip(sources.HTTP)
 	zip.Add(url1)
 	zip.Add(url2, url3)
-	br, bw, err := zip.WriteTo(out)
+	bi, bo, err := zip.WriteTo(out)
 
 	assert.Nil(t, err)
-	assert.Equal(t, int64(38), br)
-	assert.Equal(t, int64(56), bw)
+	assert.Equal(t, int64(38), bi)
+	assert.Equal(t, int64(56), bo)
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"index.html", "Hello World!"},
 		{"posts", "Post Body"},
@@ -58,11 +58,11 @@ func TestZipFromFSSources(t *testing.T) {
 	zip.Add("sample/file1.txt")
 	zip.Add("sample/file2.txt")
 	zip.Add("sample/file3.txt")
-	br, bw, err := zip.WriteTo(out)
+	bi, bo, err := zip.WriteTo(out)
 
 	assert.Nil(t, err)
-	assert.Equal(t, int64(11), br)
-	assert.Equal(t, int64(29), bw)
+	assert.Equal(t, int64(11), bi)
+	assert.Equal(t, int64(29), bo)
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"file1.txt", "One"},
 		{"file2.txt", "Two"},
