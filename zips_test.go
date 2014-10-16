@@ -40,11 +40,12 @@ func TestZipFromHTTPSources(t *testing.T) {
 	zip := NewZip(sources.HTTP)
 	zip.Add(url1)
 	zip.Add(url2, url3)
-	bi, bo, err := zip.WriteTo(out)
+	n, err := zip.WriteTo(out)
 
 	assert.Nil(t, err)
-	assert.Equal(t, int64(38), bi)
-	assert.Equal(t, int64(56), bo)
+	assert.Equal(t, int64(38), n)
+	assert.Equal(t, int64(38), zip.BytesIn)
+	assert.Equal(t, int64(56), zip.BytesOut)
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"index.html", "Hello World!"},
 		{"posts", "Post Body"},
@@ -58,11 +59,12 @@ func TestZipFromFSSources(t *testing.T) {
 	zip.Add("sample/file1.txt")
 	zip.Add("sample/file2.txt")
 	zip.Add("sample/file3.txt")
-	bi, bo, err := zip.WriteTo(out)
+	n, err := zip.WriteTo(out)
 
 	assert.Nil(t, err)
-	assert.Equal(t, int64(11), bi)
-	assert.Equal(t, int64(29), bo)
+	assert.Equal(t, int64(11), n)
+	assert.Equal(t, int64(11), zip.BytesIn)
+	assert.Equal(t, int64(29), zip.BytesOut)
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"file1.txt", "One"},
 		{"file2.txt", "Two"},
@@ -87,7 +89,7 @@ func TestEntrySkippedIfReadCloserIsNilOnError(t *testing.T) {
 	zip := NewZip(sourceFn)
 	zip.Add("good", "error", "andgoodagain")
 
-	_, _, err := zip.WriteTo(out)
+	_, err := zip.WriteTo(out)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
@@ -109,7 +111,7 @@ func TestEntryCreatedIfReadCloserIsNotNilOnError(t *testing.T) {
 	zip := NewZip(sourceFn)
 	zip.Add("good", "error", "andgoodagain")
 
-	_, _, err := zip.WriteTo(out)
+	_, err := zip.WriteTo(out)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())

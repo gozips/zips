@@ -9,6 +9,9 @@ import "github.com/gozips/source"
 type Zip struct {
 	Sources []string
 	source  source.Func
+
+	BytesIn  int64
+	BytesOut int64
 }
 
 func NewZip(fn source.Func) (z *Zip) {
@@ -45,9 +48,11 @@ func (z ZipError) Error() string {
 	return fmt.Sprintf("%d error(s):\n\n%s", len(z), strings.Join(li, "\n"))
 }
 
-// WriteTo writes the zip out the Writer and returns bytes in (uncompressed) and
-// bytes out (compressed) as well as any error
-func (z *Zip) WriteTo(w io.Writer) (int64, int64, error) {
+// WriteTo writes the zip out the Writer and returns the bytes that were *piped*
+// through the zip.
+// For actual (un)compressed numbers reference BytesIn, BytesOut
+func (z *Zip) WriteTo(w io.Writer) (int64, error) {
+	var n int64
 	var ze ZipError
 
 	zw := NewWriter(w)
@@ -65,10 +70,13 @@ func (z *Zip) WriteTo(w io.Writer) (int64, int64, error) {
 			continue // if we can't create an entry
 		}
 
-		_, err = io.Copy(w, r)
+		m, err := io.Copy(w, r)
 		check(err, &ze)
+		n += m
 	}
 
 	check(zw.Close(), &ze)
-	return zw.BytesIn, zw.BytesOut, ze
+	z.BytesIn, z.BytesOut = zw.totals()
+
+	return n, ze
 }
