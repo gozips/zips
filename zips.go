@@ -20,13 +20,13 @@ func NewZip(fn source.Func) (z *Zip) {
 	}
 }
 
-// ZipError is a collection of errors that implements error
-type ZipError []error
-
 // Add appends sources
 func (z *Zip) Add(srcStr ...string) {
 	z.Sources = append(z.Sources, srcStr...)
 }
+
+// ZipError is a collection of errors that implements error
+type ZipError []error
 
 // check appends a ZipError and returns a bool providing optional control flow
 func check(e error, err *ZipError) bool {
