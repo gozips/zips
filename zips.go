@@ -77,6 +77,9 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 
 	check(zw.Close(), &ze)
 	z.BytesIn, z.BytesOut = zw.BytesIn, zw.BytesOut
+	if ze != nil {
+		return n, ze
+	}
 
-	return n, ze
+	return n, nil
 }

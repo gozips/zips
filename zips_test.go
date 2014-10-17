@@ -28,6 +28,16 @@ func tServer() (ts *httptest.Server) {
 	return
 }
 
+func TestErrorIsTrueNil(t *testing.T) {
+	out := new(bytes.Buffer)
+	zip := NewZip(sources.HTTP)
+	_, err := zip.WriteTo(out)
+
+	if err != nil {
+		t.Error("expected true nil")
+	}
+}
+
 func TestZipFromHTTPSources(t *testing.T) {
 	ts := tServer()
 	defer ts.Close()
