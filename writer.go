@@ -1,7 +1,9 @@
 package zips
 
-import "archive/zip"
-import "io"
+import (
+	"archive/zip"
+	"io"
+)
 
 type fileheaders []*zip.FileHeader
 

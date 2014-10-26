@@ -1,16 +1,18 @@
 package zips
 
-import "bytes"
-import "fmt"
-import "io"
-import "io/ioutil"
-import "net/http"
-import "net/http/httptest"
-import "testing"
-import "github.com/nowk/assert"
-import "github.com/gozips/source"
-import "github.com/gozips/sources"
-import gozipst "github.com/gozips/testing"
+import (
+	"bytes"
+	"fmt"
+	"github.com/gozips/source"
+	"github.com/gozips/sources"
+	gozipst "github.com/gozips/testing"
+	"github.com/nowk/assert"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
 func h(str string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {

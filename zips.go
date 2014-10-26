@@ -1,7 +1,9 @@
 package zips
 
-import "io"
-import "github.com/gozips/source"
+import (
+	"github.com/gozips/source"
+	"io"
+)
 
 // Zip provides a construct to create a zip through a given source reader
 type Zip struct {
@@ -34,12 +36,11 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 	for _, srcStr := range z.Sources {
 		name, r, err := z.source.Readfrom(srcStr)
 		check(err, &ze)
-
 		if r == nil {
 			continue // if there is no readcloser
 		}
-
 		defer r.Close()
+
 		w, err := zw.Create(name)
 		if check(err, &ze) {
 			continue // if we can't create an entry
@@ -50,11 +51,12 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 		n += m
 	}
 
-	check(zw.Close(), &ze)
+	err := zw.Close() // force close to calculate compression numbers
+	check(err, &ze)
 	z.BytesIn, z.BytesOut = zw.BytesIn, zw.BytesOut
+
 	if ze != nil {
 		return n, ze
 	}
-
 	return n, nil
 }
