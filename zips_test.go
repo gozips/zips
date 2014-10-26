@@ -104,8 +104,8 @@ func TestEntrySkippedIfReadCloserIsNilOnError(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
 
-	ze := err.(ZipError)
-	assert.Equal(t, 1, len(err.(ZipError)))
+	ze := err.(Error)
+	assert.Equal(t, 1, len(err.(Error)))
 	assert.Equal(t, "uh-oh", ze[0].Error())
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"good", "Good!"},
@@ -126,8 +126,8 @@ func TestEntryCreatedIfReadCloserIsNotNilOnError(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
 
-	ze := err.(ZipError)
-	assert.Equal(t, 1, len(err.(ZipError)))
+	ze := err.(Error)
+	assert.Equal(t, 1, len(err.(Error)))
 	assert.Equal(t, "uh-oh", ze[0].Error())
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"good", "Good!"},
