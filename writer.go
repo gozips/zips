@@ -22,8 +22,8 @@ func (f fileheaders) total() (int64, int64) {
 // writer is a wrapper around zip.Writer to expose the uncompressed and
 // compressed totals
 type writer struct {
-	BytesIn  int64 // bytes read
-	BytesOut int64 // bytes compressed out
+	UncompressedSize int64 // bytes read
+	CompressedSize   int64 // bytes compressed out
 
 	*zip.Writer
 	fileHeaders fileheaders
@@ -55,5 +55,5 @@ func (z *writer) Close() error {
 }
 
 func (z *writer) tally() {
-	z.BytesIn, z.BytesOut = z.fileHeaders.total()
+	z.UncompressedSize, z.CompressedSize = z.fileHeaders.total()
 }

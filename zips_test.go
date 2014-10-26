@@ -56,8 +56,8 @@ func TestZipFromHTTPSources(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(38), n)
-	assert.Equal(t, int64(38), zip.BytesIn)
-	assert.Equal(t, int64(56), zip.BytesOut)
+	assert.Equal(t, int64(38), zip.UncompressedSize)
+	assert.Equal(t, int64(56), zip.CompressedSize)
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"index.html", "Hello World!"},
 		{"posts", "Post Body"},
@@ -75,8 +75,8 @@ func TestZipFromFSSources(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(11), n)
-	assert.Equal(t, int64(11), zip.BytesIn)
-	assert.Equal(t, int64(29), zip.BytesOut)
+	assert.Equal(t, int64(11), zip.UncompressedSize)
+	assert.Equal(t, int64(29), zip.CompressedSize)
 	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
 		{"file1.txt", "One"},
 		{"file2.txt", "Two"},

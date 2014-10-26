@@ -10,8 +10,8 @@ type Zip struct {
 	Sources []string
 	source  source.Func
 
-	BytesIn  int64
-	BytesOut int64
+	UncompressedSize int64
+	CompressedSize   int64
 }
 
 func NewZip(fn source.Func) (z *Zip) {
@@ -27,7 +27,7 @@ func (z *Zip) Add(srcStr ...string) {
 
 // WriteTo writes the zip out the Writer and returns the bytes that were *piped*
 // through the zip.
-// For actual (un)compressed numbers reference BytesIn, BytesOut
+// For actual (un)compressed numbers reference UncompressedSize, CompressedSize
 func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 	var n int64
 	var ze Error
@@ -53,7 +53,8 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 
 	err := zw.Close() // force close to calculate compression numbers
 	check(err, &ze)
-	z.BytesIn, z.BytesOut = zw.BytesIn, zw.BytesOut
+	z.UncompressedSize = zw.UncompressedSize
+	z.CompressedSize = zw.CompressedSize
 
 	if ze != nil {
 		return n, ze
