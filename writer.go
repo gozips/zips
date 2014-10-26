@@ -17,9 +17,9 @@ func (f fileheaders) total() (int64, int64) {
 	return u, c
 }
 
-// Writer is a wrapper around zip.Writer to expose the uncompressed and
+// writer is a wrapper around zip.Writer to expose the uncompressed and
 // compressed totals
-type Writer struct {
+type writer struct {
 	BytesIn  int64 // bytes read
 	BytesOut int64 // bytes compressed out
 
@@ -27,14 +27,14 @@ type Writer struct {
 	fileHeaders fileheaders
 }
 
-func NewWriter(w io.Writer) *Writer {
-	return &Writer{
+func NewWriter(w io.Writer) *writer {
+	return &writer{
 		Writer: zip.NewWriter(w),
 	}
 }
 
-// Create decomposes the original Create method and appends the FileHeader
-func (z *Writer) Create(name string) (io.Writer, error) {
+// Create recomposes the original Create method and appends the FileHeader
+func (z *writer) Create(name string) (io.Writer, error) {
 	fh := &zip.FileHeader{
 		Name:   name,
 		Method: zip.Deflate,
@@ -45,13 +45,13 @@ func (z *Writer) Create(name string) (io.Writer, error) {
 }
 
 // Close wraps the original close and calls tally
-func (z *Writer) Close() error {
+func (z *writer) Close() error {
 	err := z.Writer.Close()
 	z.tally()
 
 	return err
 }
 
-func (z *Writer) tally() {
+func (z *writer) tally() {
 	z.BytesIn, z.BytesOut = z.fileHeaders.total()
 }
