@@ -5,7 +5,7 @@ install:
   - go get github.com/gozips/sources
   - go get github.com/gozips/testing
 go:
-  - "1.0"
+  # - "1.0" # does not have int64 versions of sizes
   - "1.1"
   - "1.2"
   - "1.3"
