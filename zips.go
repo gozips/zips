@@ -1,17 +1,19 @@
 package zips
 
 import (
+	"errors"
 	"github.com/gozips/source"
 	"io"
 )
 
 // Zip provides a construct to create a zip through a given source reader
 type Zip struct {
-	Sources []string
-	source  source.Func
-
+	Sources          []string
 	UncompressedSize int64
 	CompressedSize   int64
+	N                int64 // sum of total bytes written through each Entry call
+
+	source source.Func
 	w      *writer
 }
 
@@ -33,21 +35,16 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 	var n int64
 	var ze Error
 
-	for _, srcStr := range z.Sources {
-		name, r, err := z.source.Readfrom(srcStr)
 	z.w = NewWriter(w)
+	for _, v := range z.Sources {
+		name, r, err := z.source.Readfrom(v)
 		check(err, &ze)
 		if r == nil {
 			continue // if there is no readcloser
 		}
 		defer r.Close()
 
-		if check(err, &ze) {
-			continue // if we can't create an entry
-		w, err := z.w.Create(name)
-		}
-
-		m, err := io.Copy(w, r)
+		m, err := z.AddEntry(name, r)
 		check(err, &ze)
 		n += m
 	}
@@ -58,6 +55,33 @@ func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 
 	return n, nil
 }
+
+// incN increments N by n and returns the incremented N
+func (z *Zip) incN(n int64) int64 {
+	z.N += n
+	return z.N
+}
+
+// AddEntry creates a new zip entry. This function is not intented for general
+// purpose use and as such WriteTo is required to be called before AddEntry can
+// be used.
+// Any call to AddEntry will increment N
+func (z *Zip) AddEntry(name string, r io.Reader) (int64, error) {
+	if z.w == nil {
+		return 0, errors.New("error: writer: undefined")
+	}
+
+	w, err := z.w.Create(name)
+	if err != nil {
+		return 0, err
+	}
+
+	n, err := io.Copy(w, r)
+	z.incN(n)
+
+	return n, err
+}
+
 // setSizes sets the final uncompressed/compressed sizes
 func (z *Zip) setSizes() {
 	z.UncompressedSize = z.w.UncompressedSize
