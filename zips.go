@@ -33,24 +33,24 @@ func (z *Zip) Add(srcStr ...string) {
 // For actual (un)compressed numbers reference UncompressedSize, CompressedSize
 func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 	var n int64
-	var ze Error
+	var e Error
 
 	z.w = NewWriter(w)
 	for _, v := range z.Sources {
 		name, r, err := z.source.Readfrom(v)
-		check(err, &ze)
+		check(err, &e)
 		if r == nil {
 			continue // if there is no readcloser
 		}
 		defer r.Close()
 
 		m, err := z.AddEntry(name, r)
-		check(err, &ze)
+		check(err, &e)
 		n += m
 	}
 
-	if ze != nil {
-		return n, ze
+	if e != nil {
+		return n, e
 	}
 
 	return n, nil
