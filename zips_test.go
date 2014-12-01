@@ -34,6 +34,9 @@ func TestErrorIsTrueNil(t *testing.T) {
 	out := new(bytes.Buffer)
 	zip := NewZip(sources.HTTP)
 	_, err := zip.WriteTo(out)
+	if err := zip.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	if err != nil {
 		t.Error("expected true nil")
@@ -53,6 +56,9 @@ func TestZipFromHTTPSources(t *testing.T) {
 	zip.Add(url1)
 	zip.Add(url2, url3)
 	n, err := zip.WriteTo(out)
+	if err := zip.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(38), n)
@@ -72,6 +78,9 @@ func TestZipFromFSSources(t *testing.T) {
 	zip.Add("sample/file2.txt")
 	zip.Add("sample/file3.txt")
 	n, err := zip.WriteTo(out)
+	if err := zip.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(11), n)
@@ -102,6 +111,9 @@ func TestEntrySkippedIfReadCloserIsNilOnError(t *testing.T) {
 	zip.Add("good", "error", "andgoodagain")
 
 	_, err := zip.WriteTo(out)
+	if err := zip.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
@@ -124,6 +136,9 @@ func TestEntryCreatedIfReadCloserIsNotNilOnError(t *testing.T) {
 	zip.Add("good", "error", "andgoodagain")
 
 	_, err := zip.WriteTo(out)
+	if err := zip.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
