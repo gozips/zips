@@ -23,6 +23,10 @@ func NewZip(fn source.Func) (z *Zip) {
 	}
 }
 
+func (z Zip) Len() int {
+	return len(z.Sources)
+}
+
 // Add appends sources
 func (z *Zip) Add(srcStr ...string) {
 	z.Sources = append(z.Sources, srcStr...)
