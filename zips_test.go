@@ -154,3 +154,40 @@ func TestEntryCreatedIfReadCloserIsNotNilOnError(t *testing.T) {
 		{"andgoodagain", "Good!"},
 	})
 }
+
+func TestAddEntry(t *testing.T) {
+	sourceFn := tSourceFunc(nil)
+
+	out := new(bytes.Buffer)
+	zip := NewZip(sourceFn)
+	zip.Add("good", "error", "andgoodagain")
+
+	n, err := zip.WriteTo(out)
+
+	r := bytes.NewBufferString(err.Error())
+	z, er := zip.AddEntry("archivr-errors.txt", r)
+	if er != nil {
+		t.Fatal(er)
+	}
+	if err := zip.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, err)
+	assert.Equal(t, fmt.Sprintf("1 error(s):\n\n%s", "* uh-oh"), err.Error())
+
+	assert.Equal(t, int64(10), n)
+	assert.Equal(t, int64(20), z)
+	assert.Equal(t, n+z, zip.N)
+	assert.Equal(t, int64(30), zip.UncompressedSize)
+	assert.Equal(t, int64(48), zip.CompressedSize)
+
+	ze := err.(Error)
+	assert.Equal(t, 1, len(err.(Error)))
+	assert.Equal(t, "uh-oh", ze[0].Error())
+	gozipst.VerifyZip(t, out.Bytes(), []gozipst.Entries{
+		{"good", "Good!"},
+		{"andgoodagain", "Good!"},
+		{"archivr-errors.txt", "1 error(s):\n\n* uh-oh"},
+	})
+}
