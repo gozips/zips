@@ -11,7 +11,7 @@ type Zip struct {
 	Sources          []string
 	UncompressedSize int64
 	CompressedSize   int64
-	N                int64 // sum of total bytes written through each Entry call
+	N                int64 // sum of bytes written through each AddEntry call
 
 	source source.Func
 	w      *writer
@@ -28,9 +28,8 @@ func (z *Zip) Add(srcStr ...string) {
 	z.Sources = append(z.Sources, srcStr...)
 }
 
-// WriteTo writes the zip out the Writer and returns the bytes that were *piped*
-// through the zip.
-// For actual (un)compressed numbers reference UncompressedSize, CompressedSize
+// WriteTo initiates a new writer and returns the number of bytes read from
+// source.
 func (z *Zip) WriteTo(w io.Writer) (int64, error) {
 	var n int64
 	var e Error
